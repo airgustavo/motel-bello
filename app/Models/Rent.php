@@ -5,8 +5,6 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-
-// app/Models/Rent.php
 class Rent extends Model
 {
     protected $fillable = ['name', 'cost', 'duration'];
@@ -16,6 +14,7 @@ class Rent extends Model
         return $this->hasMany(RoomRental::class);
     }
 }
+
 
 
     

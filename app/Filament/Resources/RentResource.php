@@ -41,11 +41,14 @@ class RentResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('name')
+                    ->label('Tipo de alquiler')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('cost')
+                    ->label('Costo')
                     ->money()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('duration')
+                    ->label('Duración en minutos')
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('created_at')
@@ -61,7 +64,8 @@ class RentResource extends Resource
                 //
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\EditAction::make()
+                ->label('Editar'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

@@ -25,9 +25,11 @@ class RoomResource extends Resource
         return $form
             ->schema([
                 Forms\Components\TextInput::make('name')
+                    ->label('Nombre de la habitación')
                     ->required()
                     ->maxLength(255),
                 Select::make('status')
+            ->label('Estado de la habitación')
             ->options([
                 'disponible' => 'Disponible',
                 'ocupada' => 'Ocupada',
@@ -42,8 +44,10 @@ class RoomResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('name')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('status'),
+                    ->searchable()
+                    ->label('Habitación'),
+                Tables\Columns\TextColumn::make('status')               
+                    ->label('Estado'),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
@@ -57,7 +61,8 @@ class RoomResource extends Resource
                 //
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\EditAction::make()
+                ->label('Editar'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

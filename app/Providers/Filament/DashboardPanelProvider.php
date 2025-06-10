@@ -32,7 +32,7 @@ class DashboardPanelProvider extends PanelProvider
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->pages([
-                RoomOverview::class, // ← usamos tu página personalizada
+                \App\Filament\Pages\RoomOverview::class, // ✅ OK
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([

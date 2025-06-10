@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class RoomRental extends Model
 {
     protected $fillable = ['room_id', 'rent_id', 'start_time', 'end_time'];
+
     protected $casts = [
         'start_time' => 'datetime',
         'end_time' => 'datetime',
@@ -23,9 +24,9 @@ class RoomRental extends Model
         return $this->belongsTo(Rent::class);
     }
 
-    // ¿Aún sigue activa?
+    // Determina si esta renta aún está activa
     public function isActive(): bool
     {
-         return now()->between($this->start_time, $this->end_time);
+        return now()->between($this->start_time, $this->end_time);
     }
 }
