@@ -16,8 +16,11 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 class RentResource extends Resource
 {
     protected static ?string $model = Rent::class;
-
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationGroup = 'Catalogos Generales'; // Agrupa este recurso bajo "Catalogos Generales"
+    protected static ?int $navigationSort = 2;
+    protected static ?string $title = 'Tipos de Alquiler';
+    protected static ?string $navigationLabel = 'Tipos de Alquiler';
+    protected static ?string $navigationIcon = 'heroicon-o-numbered-list';
 
     public static function form(Form $form): Form
     {

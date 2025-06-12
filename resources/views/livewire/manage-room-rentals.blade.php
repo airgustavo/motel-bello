@@ -3,19 +3,19 @@
         @foreach ($rooms as $room)
             <div wire:key="room-{{ $room->id }}"
                 wire:click="seleccionarHabitacion({{ $room->id }})"
-                    class="block max-w-sm p-6 border rounded-lg shadow-xl" 
+                    class="block max-w-sm p-6 border rounded-lg shadow-xl cursor-pointer transform hover:scale-110 hover:opacity-90 transition duration-200 ease-in-out"
                     style="
-                    @if($room->status === 'disponible') background-color: #50b25d; border-color: #000000; dark:border-color: #ffffff; hover:baground-color: #bfdbfe;
+                    @if($room->status === 'disponible') background-color: #50b25d; border-color: #000000;
                         box-shadow:
                             1px 2px 2px hsl(220deg 60% 50% / 0.333),
                             2px 4px 4px hsl(220deg 60% 50% / 0.333),
                             3px 6px 6px hsl(220deg 60% 50% / 0.333);
-                        @elseif($room->status === 'ocupada') background-color: #ff3c3c; border-color: #000000; hover:bg-blue-100;
+                        @elseif($room->status === 'ocupada') background-color: #ff3c3c; border-color: #000000;
                         box-shadow:
                             1px 2px 2px hsl(220deg 60% 50% / 0.333),
                             2px 4px 4px hsl(220deg 60% 50% / 0.333),
                             3px 6px 6px hsl(220deg 60% 50% / 0.333);
-                        @elseif($room->status === 'fuera_de_servicio') background-color: #faff89; border-color: #000000; hover:bg-blue-100;
+                        @elseif($room->status === 'fuera_de_servicio') background-color: #faff89; border-color: #000000;
                         box-shadow:
                             1px 2px 2px hsl(220deg 60% 50% / 0.333),
                             2px 4px 4px hsl(220deg 60% 50% / 0.333),

@@ -121,52 +121,47 @@ class ManageRoomRentals extends Component
 
     public function render()
     {
-        // Actualización automática de estado para rentas expiradas
-        $occupiedRooms = Room::where('status', 'ocupada')->get();
-        foreach ($occupiedRooms as $room) {
-            $room->load('currentRental'); // Carga la relación que filtra por end_time > now()
-            // Parte 1: Actualización automática de estado para rentas expiradas
-            // Obtenemos las habitaciones marcadas como 'ocupada' y cargamos su 'currentRental'
-            // La relación 'currentRental' en tu modelo Room ya debería filtrar por end_time > now()
-            $roomsToUpdateStatus = Room::where('status', 'ocupada')->with('currentRental')->get();
-            foreach ($roomsToUpdateStatus as $room) {
-                if (is_null($room->currentRental)) {
-                    // Si está 'ocupada' pero no tiene una renta activa (porque currentRental es null),
-                    // significa que la renta ha expirado. La ponemos disponible.
-                    $room->update(['status' => 'disponible']);
-                }
+        // Parte 1: Actualización automática de estado para rentas expiradas
+        // Obtenemos las habitaciones marcadas como 'ocupada' y cargamos su 'currentRental'
+        // La relación 'currentRental' en tu modelo Room ya debería filtrar por end_time > now()
+        $roomsToUpdateStatus = Room::where('status', 'ocupada')->with('currentRental')->get();
+        foreach ($roomsToUpdateStatus as $roomToUpdate) { // Usar un nombre de variable diferente para evitar colisiones
+            if (is_null($roomToUpdate->currentRental)) {
+                // Si está 'ocupada' pero no tiene una renta activa (porque currentRental es null),
+                // significa que la renta ha expirado. La ponemos disponible.
+                $roomToUpdate->update(['status' => 'disponible']);
             }
-            // Carga los datos actualizados para la vista
+        }
 
-            // Parte 2: Cargar datos frescos para la vista (esto incluye los estados actualizados)
-            $this->loadData();
+        // Parte 2: Cargar datos frescos para la vista (esto incluye los estados actualizados)
+        $this->loadData(); // Esto cargará $this->rooms con los datos más recientes
 
-            // Parte 3: Verificar y enviar notificaciones de tiempo bajo
-            $activeRentalIdsThisCycle = [];
-            foreach ($this->rooms as $room) {
-                if ($room->status === 'ocupada' && $room->currentRental) {
-                    $activeRentalIdsThisCycle[] = $room->currentRental->id; // Guardar ID de renta activa
-                    $endTime = $room->currentRental->end_time; // Asumimos que es una instancia Carbon
-                    $minutosRestantes = now()->diffInMinutes($endTime, false);
-                    $minutosRestantes = floor($minutosRestantes); // Redondear hacia abajo
-                    // Enviar notificación si quedan 10 minutos o menos
-                    if ($minutosRestantes <= 10 && $minutosRestantes >= 0) { // Tiempo bajo y aún no ha terminado completamente
-                        if (!in_array($room->currentRental->id, $this->lowTimeWarningSentForRoomRentalIds)) {
-                            Notification::make()
-                                ->title('Tiempo por terminar')
-                                ->warning()
-                                ->body("A la habitación {$room->name} le quedan aproximadamente {$minutosRestantes} minuto(s).")
-                                ->persistent() // El usuario debe descartarla manualmente
-                                ->send();
-                            $this->lowTimeWarningSentForRoomRentalIds[] = $room->currentRental->id;
-                        }
+        // Parte 3: Verificar y enviar notificaciones de tiempo bajo
+        $activeRentalIdsThisCycle = [];
+        // Iterar sobre $this->rooms que fue cargado por loadData()
+        foreach ($this->rooms as $roomForNotification) { // Usar un nombre de variable diferente
+            if ($roomForNotification->status === 'ocupada' && $roomForNotification->currentRental) {
+                $activeRentalIdsThisCycle[] = $roomForNotification->currentRental->id; // Guardar ID de renta activa
+                $endTime = $roomForNotification->currentRental->end_time; // Asumimos que es una instancia Carbon
+                $minutosRestantes = now()->diffInMinutes($endTime, false);
+                $minutosRestantes = floor($minutosRestantes); // Redondear hacia abajo
+                // Enviar notificación si quedan 10 minutos o menos
+                if ($minutosRestantes <= 10 && $minutosRestantes >= 0) { // Tiempo bajo y aún no ha terminado completamente
+                    if (!in_array($roomForNotification->currentRental->id, $this->lowTimeWarningSentForRoomRentalIds)) {
+                        Notification::make()
+                            ->title('Tiempo por terminar')
+                            ->warning()
+                            ->body("A la habitación {$roomForNotification->name} le quedan aproximadamente {$minutosRestantes} minuto(s).")
+                            ->persistent() // El usuario debe descartarla manualmente
+                            ->send();
+                        $this->lowTimeWarningSentForRoomRentalIds[] = $roomForNotification->currentRental->id;
                     }
                 }
             }
-            // Limpiar la lista de advertencias para rentas que ya no están activas
-            $this->lowTimeWarningSentForRoomRentalIds = array_intersect($this->lowTimeWarningSentForRoomRentalIds, $activeRentalIdsThisCycle);
-
-            return view('livewire.manage-room-rentals');
         }
+        // Limpiar la lista de advertencias para rentas que ya no están activas
+        $this->lowTimeWarningSentForRoomRentalIds = array_intersect($this->lowTimeWarningSentForRoomRentalIds, $activeRentalIdsThisCycle);
+
+        return view('livewire.manage-room-rentals'); // Asegurarse de que esto se ejecute al final
     }
 }

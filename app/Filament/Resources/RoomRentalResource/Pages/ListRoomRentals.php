@@ -13,7 +13,11 @@ class ListRoomRentals extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make(),
+            // Actions\CreateAction::make()
+            //     ->label('Nueva Renta')
+            //     ->icon('heroicon-o-plus')
+            //     ->color('primary')
+            //     ->tooltip('Registrar una nueva renta de habitación'),
         ];
     }
 }

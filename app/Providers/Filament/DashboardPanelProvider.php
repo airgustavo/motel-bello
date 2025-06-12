@@ -24,6 +24,7 @@ class DashboardPanelProvider extends PanelProvider
     {
         return $panel
             ->default()
+            ->brandName('Motel Bello')
             ->id('dashboard')
             ->path('dashboard')
             ->login()

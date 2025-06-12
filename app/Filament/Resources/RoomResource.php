@@ -17,8 +17,11 @@ use Filament\Forms\Components\Select;
 class RoomResource extends Resource
 {
     protected static ?string $model = Room::class;
-
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationGroup = 'Catalogos Generales'; // Agrupa este recurso bajo "Catalogos Generales"
+    protected static ?int $navigationSort = 1;
+    protected static ?string $title = 'Habitaciones';
+    protected static ?string $navigationLabel = 'Habitaciones';
+    protected static ?string $navigationIcon = 'heroicon-o-home-modern';
 
     public static function form(Form $form): Form
     {
@@ -28,14 +31,14 @@ class RoomResource extends Resource
                     ->label('Nombre de la habitación')
                     ->required()
                     ->maxLength(255),
-                Select::make('status')
-            ->label('Estado de la habitación')
-            ->options([
-                'disponible' => 'Disponible',
-                'ocupada' => 'Ocupada',
-                'fuera_de_servicio' => 'Fuera de Servicio',
-            ])
-            ->required(),
+                Forms\Components\Select::make('status')
+                    ->label('Estado de la habitación')
+                    ->options([
+                        'disponible' => 'Disponible',
+                        'ocupada' => 'Ocupada',
+                        'fuera_de_servicio' => 'Fuera de Servicio',
+                    ])
+                    ->required(),
             ]);
     }
 
@@ -45,9 +48,19 @@ class RoomResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('name')
                     ->searchable()
-                    ->label('Habitación'),
+                    ->label('Habitación')
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('status')               
-                    ->label('Estado'),
+                    ->label('Estado')
+                    ->badge()
+                    ->color(fn (string $state): string => match (strtolower($state ?? '')) {
+                        'disponible' => 'success',
+                        'ocupada' => 'danger',
+                        'fuera_de_servicio' => 'warning',
+                        default => 'gray',
+                    })
+                    ->searchable()
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
