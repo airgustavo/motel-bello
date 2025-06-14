@@ -10,8 +10,12 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Filament\Tables\Columns\TextColumn;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+
 
 class UserResource extends Resource
 {
@@ -27,17 +31,17 @@ class UserResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('name')
+                TextInput::make('name')
                     ->label('Nombre')
                     ->required()
                     ->maxLength(255),
-                Forms\Components\TextInput::make('email')
+                TextInput::make('email')
                     ->label('Correo electrónico')
                     ->email()
                     ->required()
                     ->maxLength(255),
-                //Forms\Components\DateTimePicker::make('email_verified_at'),
-                Forms\Components\TextInput::make('password')
+                //DateTimePicker::make('email_verified_at'),
+                TextInput::make('password')
                     ->label('Contraseña (opcional)')
                     ->password()
                     // Pide que sea requerido si el campo es nuevo
@@ -49,6 +53,14 @@ class UserResource extends Resource
                     })
                     ->dehydrated(fn ($state) => filled($state))
                     ->maxLength(255),
+                Select::make('roles')
+                    ->multiple()
+                    ->label('Roles')
+                    ->relationship('roles', 'name')
+                    ->preload()
+                    ->required()
+                    ->searchable()
+                    ->placeholder('Selecciona uno o más roles'),
             ]);
     }
 
@@ -56,20 +68,22 @@ class UserResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('name')
+                TextColumn::make('name')
                     ->label('Nombre')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('email')
+                TextColumn::make('email')
                     ->label('Correo electrónico')
                     ->searchable(),
-                // Tables\Columns\TextColumn::make('email_verified_at')
+                // TextColumn::make('email_verified_at')
                 //     ->dateTime()
                 //     ->sortable(),
-                Tables\Columns\TextColumn::make('created_at')
+                TextColumn::make('roles.name')
+                    ->label('Rol'),
+                TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('updated_at')
+                TextColumn::make('updated_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),

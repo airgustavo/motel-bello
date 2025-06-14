@@ -12,6 +12,8 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Filament\Tables\Filters\SelectFilter; // Importar SelectFilter
+use Filament\Tables\Enums\FiltersLayout;
 
 class RoomRentalResource extends Resource
 {
@@ -53,6 +55,7 @@ class RoomRentalResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->defaultSort('created_at', 'desc') // Añade esta línea
             ->columns([
                 Tables\Columns\TextColumn::make('room.name') // Cambiado de 'room_id' a 'room.name'
                     ->label('Habitación')
@@ -85,8 +88,32 @@ class RoomRentalResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                //
-            ])
+                Tables\Filters\Filter::make('start_time')
+                    ->form([
+                        Forms\Components\DatePicker::make('start_from')
+                            ->label('Desde la Fecha'),
+                        Forms\Components\DatePicker::make('start_until')
+                            ->label('Hasta la Fecha'),
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query
+                            ->when($data['start_from'], fn (Builder $query, $date): Builder => $query->whereDate('start_time', '>=', $date))
+                            ->when($data['start_until'], fn (Builder $query, $date): Builder => $query->whereDate('start_time', '<=', $date));
+                    }),
+                    SelectFilter::make('room')
+                        ->label('Habitación')
+                        ->relationship('room', 'name')
+                        ->searchable()
+                        ->preload(),
+                    SelectFilter::make('rent')
+                        ->placeholder('Selecciona un tipo de alquiler')
+                        ->label('Tipo de Alquiler')
+                        ->relationship('rent', 'name')
+                        ,
+                
+                ], 
+                layout: FiltersLayout::AboveContentCollapsible
+                )
             ->actions([
                 Tables\Actions\EditAction::make()                
                 ->label('Editar'),
