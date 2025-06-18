@@ -4,16 +4,24 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\RoomRentalResource\Pages;
 use App\Filament\Resources\RoomRentalResource\RelationManagers;
+use App\Filament\Exports\RoomRentalExporter; // Importar tu Exporter personalizado
 use App\Models\RoomRental;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Forms\Components\Grid; // Importar Grid
+use Filament\Forms\Components\DatePicker; // Importar DatePicker
+use Filament\Forms\Components\Select; // Importar Select
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Filament\Tables\Filters\SelectFilter; // Importar SelectFilter
+use Filament\Tables\Filters\Filter; // Importar Filter
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Enums\FiltersLayout;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
-use Filament\Tables\Filters\SelectFilter; // Importar SelectFilter
-use Filament\Tables\Enums\FiltersLayout;
+use pxlrbt\FilamentExcel\Actions\Tables\ExportBulkAction; // Asegúrate que esta es la acción que usas
+use pxlrbt\FilamentExcel\Exports\ExcelExport; // Necesario para usar withExporter
 
 class RoomRentalResource extends Resource
 {
@@ -29,24 +37,24 @@ class RoomRentalResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\Select::make('room_id')
+                Select::make('room_id')
                     ->label('Habitación')
                     ->relationship('room', 'name') // Asumiendo que 'name' es el campo que quieres mostrar
                     ->required()
                     ->searchable()
                     ->preload() // Carga los datos al abrir el formulario
                     ->placeholder('Selecciona una habitación'),
-                Forms\Components\Select::make('rent_id')
+                Select::make('rent_id')
                     ->label('Tipo de Alquiler')
                     ->relationship('rent', 'name') // Asumiendo que 'name' es el campo que quieres mostrar
                     ->searchable()
                     ->required()
                     ->preload() // Carga los datos al abrir el formulario
                     ->placeholder('Selecciona un tipo de alquiler'),
-                Forms\Components\DateTimePicker::make('start_time')
+                DateTimePicker::make('start_time')
                     ->label('Hora de Entrada')
                     ->required(),
-                Forms\Components\DateTimePicker::make('end_time')
+                DateTimePicker::make('end_time')
                     ->label('Hora de Salida')
                     ->required(),
             ]);
@@ -57,48 +65,48 @@ class RoomRentalResource extends Resource
         return $table
             ->defaultSort('created_at', 'desc') // Añade esta línea
             ->columns([
-                Tables\Columns\TextColumn::make('room.name') // Cambiado de 'room_id' a 'room.name'
+                TextColumn::make('room.name') // Cambiado de 'room_id' a 'room.name'
                     ->label('Habitación')
                     ->searchable()
                     // ->numeric() // Ya no es numérico, es el nombre
                     ->sortable(),
-                Tables\Columns\TextColumn::make('rent.name') // Asumo que también querrás el nombre del tipo de alquiler
+                TextColumn::make('rent.name') // Asumo que también querrás el nombre del tipo de alquiler
                     ->label('Tipo de Alquiler')
                     ->searchable()
                     // ->numeric() // Ya no es numérico, es el nombre
                     ->sortable(),
-                tables\Columns\TextColumn::make('rent.cost')
+                TextColumn::make('rent.cost')
                     ->label('Costo de la Habitación')
                     ->sortable(),
-                Tables\Columns\TextColumn::make('start_time')
+                TextColumn::make('start_time')
                     ->label('Hora de Entrada')
                     ->dateTime()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('end_time')
+                TextColumn::make('end_time')
                     ->label('Hora de Salida')
                     ->dateTime()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('created_at')
+                TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('updated_at')
+                TextColumn::make('updated_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                Tables\Filters\Filter::make('start_time')
+                Filter::make('start_time')                    
                     ->form([
-                        Forms\Components\DatePicker::make('start_from')
-                            ->label('Desde la Fecha'),
-                        Forms\Components\DatePicker::make('start_until')
-                            ->label('Hasta la Fecha'),
-                    ])
+                         Grid::make(2)->schema([
+                            DatePicker::make('start_from')->label('Desde la Fecha'),
+                            DatePicker::make('start_until')->label('Hasta la Fecha'),
+                        ]),
+                    ])                    
                     ->query(function (Builder $query, array $data): Builder {
                         return $query
-                            ->when($data['start_from'], fn (Builder $query, $date): Builder => $query->whereDate('start_time', '>=', $date))
-                            ->when($data['start_until'], fn (Builder $query, $date): Builder => $query->whereDate('start_time', '<=', $date));
+                            ->when($data['start_from'] ?? null, fn (Builder $query, $date): Builder => $query->whereDate('start_time', '>=', $date))
+                            ->when($data['start_until'] ?? null, fn (Builder $query, $date): Builder => $query->whereDate('start_time', '<=', $date));
                     }),
                     SelectFilter::make('room')
                         ->label('Habitación')
@@ -108,20 +116,24 @@ class RoomRentalResource extends Resource
                     SelectFilter::make('rent')
                         ->placeholder('Selecciona un tipo de alquiler')
                         ->label('Tipo de Alquiler')
-                        ->relationship('rent', 'name')
-                        ,
+                        ->relationship('rent', 'name'),
                 
-                ], 
-                layout: FiltersLayout::AboveContentCollapsible
-                )
+                ],layout: FiltersLayout::AboveContent) // Cambiado a FiltersLayout::AboveContent para que los filtros aparezcan encima del contenido de la tabla
+            ->filtersFormColumns(3) // Ajusta el número de columnas del formulario de filtros
             ->actions([
                 Tables\Actions\EditAction::make()                
                 ->label('Editar'),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                ]),
+                // Tables\Actions\BulkActionGroup::make([
+                //     Tables\Actions\DeleteBulkAction::make(),
+                // ]),
+                ExportBulkAction::make('export_selected')
+                    ->label('Exportar Seleccionados')
+                    ->exports([
+                        RoomRentalExporter::make('rentas_export') // Usamos tu clase exportadora directamente
+                            ->withFilename(fn () => 'rentas-habitaciones-' . date('Y-m-d'))
+                    ]),
             ]);
     }
 

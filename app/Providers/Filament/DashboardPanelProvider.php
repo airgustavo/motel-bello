@@ -39,7 +39,9 @@ class DashboardPanelProvider extends PanelProvider
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
-                Widgets\AccountWidget::class,
+                //Widgets\AccountWidget::class,
+                //Widgets\IncomeTodayWidget::class, // Asegúrate de que este widget esté correctamente definido
+                //Widgets\RoomsRentalsTodayWidget::class, // Asegúrate de que este widget esté correctamente definido
                 // Widgets\FilamentInfoWidget::class,
             ])
             ->profile()
