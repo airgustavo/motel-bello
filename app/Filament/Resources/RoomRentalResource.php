@@ -109,10 +109,9 @@ class RoomRentalResource extends Resource
                             ->when($data['start_until'] ?? null, fn (Builder $query, $date): Builder => $query->whereDate('start_time', '<=', $date));
                     }),
                     SelectFilter::make('room')
+                        ->placeholder('Selecciona una habitación')
                         ->label('Habitación')
-                        ->relationship('room', 'name')
-                        ->searchable()
-                        ->preload(),
+                        ->relationship('room', 'name'),
                     SelectFilter::make('rent')
                         ->placeholder('Selecciona un tipo de alquiler')
                         ->label('Tipo de Alquiler')

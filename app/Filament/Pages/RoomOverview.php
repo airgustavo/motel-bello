@@ -12,14 +12,10 @@ class RoomOverview extends Page
     protected static ?string $navigationIcon = 'heroicon-o-home';
     protected static string $view = 'filament.pages.room-overview';
 
-    // protected function getHeaderWidgets(): array
-    // {
-    //     return [
-    //         RoomsRentalsTodayWidget::class,
-    //         IncomeTodayWidget::class,
-    //     ];
-    // }
-
+    public function getHeaderWidgetsColumns(): int | array
+{
+    return 3;
+}
 
      protected function getFooterWidgets(): array
      {
